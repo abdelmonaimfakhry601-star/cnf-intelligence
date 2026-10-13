@@ -11,18 +11,14 @@ col_settings, col_player = st.columns(2)
 
 with col_settings:
     st.subheader("⚙️ إعدادات وتخصيص السوار الذكي")
-    
-    # اختيار اسم السوار
     bracelet_name = st.text_input("🏷️ اختر اسم السوار الذكي (Smart Fence ID):", value="Smart_Fence_Alpha_01")
     
-    # اختيار القارئ
     reciter = st.selectbox("🎙️ اختر القارئ المفضلة:", [
         "الشيخ عبد الباسط عبد الصمد (Murattal)",
         "الشيخ محمود خليل الحصري",
         "الشيخ مشاري راشد العفاسي"
     ])
     
-    # اختيار السورة القرآنية (جميع سور القرآن الكريم كاملة)
     surahs = [
         "سورة الفاتحة", "سورة البقرة", "سورة آل عمران", "سورة النساء", "سورة المائدة", 
         "سورة الأنعام", "سورة الأعراف", "سورة الأنفال", "سورة التوبة", "سورة يونس",
@@ -52,20 +48,13 @@ with col_settings:
 
 with col_player:
     st.subheader("📻 لوحة التشغيل والبث الصوتي")
-    
     st.success(f"✅ تم ربط السوار: **{bracelet_name}** بنجاح!")
     st.info(f"🎧 يتم الآن بث: **{selected_surah}** بصوت **{reciter}**.")
     
-    # مشغل صوتي تجريبي (عبر روابط راديو القرآن الكريم المباشرة أو محاكاة البث)
     audio_urls = {
         "الشيخ عبد الباسط عبد الصمد (Murattal)": "https://download.quranicaudio.com/quran/abdul_basit_murattal/001.mp3",
         "الشيخ محمود خليل الحصري": "https://download.quranicaudio.com/quran/mahmood_khalil_al-husary/001.mp3",
         "الشيخ مشاري راشد العفاسي": "https://download.quranicaudio.com/quran/mishary_rashid_al-afasy/001.mp3"
     }
-    
     current_audio_url = audio_urls.get(reciter, "https://download.quranicaudio.com/quran/mishary_rashid_al-afasy/001.mp3")
-    
     st.audio(current_audio_url, format="audio/mp3")
-    
-    st.markdown("---")
-    st.metric("حالة اتصال السوار (Smart Fence)", "متصل عبر الأقمار/Wi-Fi", "100% Signal")
