@@ -46,52 +46,53 @@ st.title(T["title"])
 st.caption(T["subtitle"])
 st.markdown("---")
 
-# إنشاء الأربعة تبويبات الرئيسية
+# ---------------------------------------------------------
+# لوحة التحكم الجانبية (Sidebar) لبيانات الإدخال كما طلبتم
+# ---------------------------------------------------------
+st.sidebar.header("⚙️ إعدادات المحاكاة السريعة")
+area = st.sidebar.number_input("مساحة المزرعة (هكتار)", value=50.31, min_value=0.1)
+nitrogen = st.sidebar.number_input("السماد النيتروجيني (N kg/ha)", value=100.16)
+diesel_l = st.sidebar.number_input("استهلاك الديزل (L/ha)", value=60.16)
+electricity_kwh = st.sidebar.number_input("استهلاك الكهرباء (kWh/ha)", value=349.71)
+soc_initial = st.sidebar.number_input("كربون التربة الأولي SOC (g/kg)", value=11.86)
+soc_final = st.sidebar.number_input("كربون التربة النهائي SOC (g/kg)", value=15.33)
+
+# الحسابات العلمية بناءً على المدخلات الجانبية
+emissions_fuel = (diesel_l * 2.68 + electricity_kwh * 0.5) / 1000.0
+emissions_fertilizer = (nitrogen * 5.8) / 1000.0
+gross_ghg = emissions_fuel + emissions_fertilizer
+
+soc_stock_init = soc_initial * 1.3 * 30 * 0.1
+soc_stock_fin = soc_final * 1.3 * 30 * 0.1
+carbon_removal_tCO2 = (soc_stock_fin - soc_stock_init) * (44.0 / 12.0) / 5.0
+net_balance = gross_ghg - carbon_removal_tCO2
+
+# التبويبات الرئيسية في الصفحة الرئيسية
 tab1, tab2, tab3, tab4 = st.tabs([T["tab_overview"], T["tab_profile"], T["tab_ghg"], T["tab_ai"]])
 
-# --- TAB 1: OVERVIEW ---
 with tab1:
     st.subheader("📊 مؤشرات الأداء الرئيسية للمزرعة (KPIs)")
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("المحصول المتوقع", "5.2 t/ha", "+0.7")
-    c2.metric("الانبعاثات الإجمالية", "0.92 t CO2e/ha", "-1.88")
-    c3.metric("احتجاز الكربون", "8.45 t CO2e/ha", "+5.25")
-    c4.metric("صافي الرصيد", "-7.53 t CO2e/ha", "Carbon Negative")
+    c1.metric("مساحة المزرعة", f"{area} ha")
+    c2.metric("الانبعاثات الإجمالية", f"{gross_ghg:.2f} t CO2e/ha")
+    c3.metric("احتجاز الكربون", f"{carbon_removal_tCO2:.2f} t CO2e/ha")
+    c4.metric("صافي الرصيد", f"{net_balance:.2f} t CO2e/ha", "Carbon Negative" if net_balance < 0 else "Carbon Positive")
 
-# --- TAB 2: FARM PROFILE ---
 with tab2:
-    st.subheader("🌾 إدخال بيانات المزرعة والموسم الزراعي")
+    st.subheader("🌾 ملف المزرعة والموسم الزراعي")
     col_a, col_b = st.columns(2)
     with col_a:
-        farm_id = st.text_input("معرف المزرعة / Farm ID", value="FARM-2026-CNF")
-        area = st.number_input("مساحة المزرعة (هكتار) / Area", value=50.0, min_value=0.1)
-        soil_type = st.selectbox("نوع التربة / Soil Type", ["Clay (طينية)", "Sandy (رملية)", "Loam (طميية)"])
+        st.text_input("معرف المزرعة / Farm ID", value="FARM-2026-CNF")
+        st.selectbox("نوع التربة / Soil Type", ["Clay (طينية)", "Sandy (رملية)", "Loam (طميية)"])
     with col_b:
-        crop = st.selectbox("المحصول / Crop Type", ["القمح (Wheat)", "الذرة (Maize)", "البرسيم (Alfalfa)"])
-        irrigation = st.selectbox("نظام الري / Irrigation", ["Drip (ري بالتنقيط)", "Sprinkler (ري بالرش)", "Flood (ري بالغمر)"])
-        nitrogen = st.number_input("السماد النيتروجيني (N kg/ha)", value=100.0)
+        st.selectbox("المحصول / Crop Type", ["القمح (Wheat)", "الذرة (Maize)", "البرسيم (Alfalfa)"])
+        st.selectbox("نظام الري / Irrigation", ["Drip (ري بالتنقيط)", "Sprinkler (ري بالرش)", "Flood (ري بالغمر)"])
+    st.info("💡 يمكنك تعديل القيم من الشريط الجانبي الأيسر لملاحظة التغير الفوري في كافة الحسابات والرسوم البيانية.")
 
-# --- TAB 3: GHG & CARBON ACCOUNTING ---
 with tab3:
-    st.subheader("💨 محاسبة غازات الاحتباس الحراري ومعادلات الكربون")
+    st.subheader("💨 محاسبة غازات الاحتباس الحراري ومعادلات الكربون الفورية")
     col_g1, col_g2 = st.columns(2)
     with col_g1:
-        diesel_l = st.number_input("استهلاك الديزل (Diesel L/ha)", value=60.0)
-        electricity_kwh = st.number_input("استهلاك الكهرباء (Electricity kWh/ha)", value=350.0)
-        soc_initial = st.number_input("كربون التربة الأولي SOC (g/kg)", value=12.0)
-        soc_final = st.number_input("كربون التربة النهائي SOC (g/kg)", value=15.5)
-        
-        # الحسابات العلمية
-        emissions_fuel = (diesel_l * 2.68 + electricity_kwh * 0.5) / 1000.0
-        emissions_fertilizer = (nitrogen * 5.8) / 1000.0
-        gross_ghg = emissions_fuel + emissions_fertilizer
-        
-        soc_stock_init = soc_initial * 1.3 * 30 * 0.1
-        soc_stock_fin = soc_final * 1.3 * 30 * 0.1
-        carbon_removal_tCO2 = (soc_stock_fin - soc_stock_init) * (44.0 / 12.0) / 5.0
-        net_balance = gross_ghg - carbon_removal_tCO2
-
-    with col_g2:
         st.markdown(f"### **{T['gross_label']}:** `{gross_ghg:.2f}` t CO2e/ha/yr")
         st.markdown(f"### **{T['removal_label']}:** `{carbon_removal_tCO2:.2f}` t CO2e/ha/yr")
         st.markdown(f"## **{T['net_balance']}:** `{net_balance:.2f}` t CO2e/ha/yr")
@@ -100,18 +101,18 @@ with tab3:
             st.success(T["status_neg"])
         else:
             st.warning(T["status_pos"])
+            
+    with col_g2:
+        fig = go.Figure(data=[
+            go.Bar(name='Gross Emissions', x=['Carbon Balance'], y=[gross_ghg], marker_color='crimson'),
+            go.Bar(name='Soil Carbon Removal', x=['Carbon Balance'], y=[carbon_removal_tCO2], marker_color='forestgreen')
+        ])
+        fig.update_layout(barmode='group', title="مقارنة الانبعاثات والاحتجاز (Carbon Balance)")
+        st.plotly_chart(fig, use_container_width=True)
 
-    fig = go.Figure(data=[
-        go.Bar(name='Gross Emissions', x=['Carbon Balance'], y=[gross_ghg], marker_color='crimson'),
-        go.Bar(name='Soil Carbon Removal', x=['Carbon Balance'], y=[carbon_removal_tCO2], marker_color='forestgreen')
-    ])
-    fig.update_layout(barmode='group', title="مقارنة الانبعاثات والاحتجاز (Carbon Balance)")
-    st.plotly_chart(fig, use_container_width=True)
-
-# --- TAB 4: AI OPTIMIZATION & XAI ---
 with tab4:
     st.subheader("🤖 تحليل الذكاء الاصطناعي وتفسير النماذج (XAI Feature Importance)")
-    st.write("تدريب نموذج ذكاء اصطناعي (Random Forest) لتحليل العوامل الأكثر تأثيراً على أداء المزرعة.")
+    st.write("تدريب نموذج ذكاء اصطناعي (Random Forest) لتحليل العوامل الأكثر تأثيراً على أداء المزرعة بناءً على مدخلاتك الحالية.")
     
     np.random.seed(42)
     X_dummy = pd.DataFrame({
